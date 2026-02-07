@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE settings
+.vscode/
+.idea/
+
+# Temp files
+temp_uploads/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Model files (regenerate on deploy)
+# *.pkl
