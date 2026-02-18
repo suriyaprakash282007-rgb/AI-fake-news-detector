@@ -15,6 +15,8 @@ A simple, student-friendly web application that analyzes news articles to detect
 3. **Click here to open:** 👉 [http://localhost:5000](http://localhost:5000) 👈
 
 > 💡 **Pro Tip:** Run `python start.py` for automatic startup and browser opening!
+> 
+> 📱 **Multiple Ways to Access:** See [ACCESS_GUIDE.md](ACCESS_GUIDE.md) for all access options (mobile, public URL, etc.)
 
 For detailed instructions, see [QUICK_START.md](QUICK_START.md)
 
