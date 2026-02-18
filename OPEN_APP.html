@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Launch AI Fake News Detector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+        }
+        
+        p {
+            color: #718096;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+        
+        .launch-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.3em;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+        }
+        
+        .launch-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+        
+        .launch-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .url-display {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 30px;
+            color: #4a5568;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .status.checking {
+            display: block;
+            background: #fef5e7;
+            color: #f39c12;
+        }
+        
+        .status.ready {
+            display: block;
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+        
+        .status.error {
+            display: block;
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+        
+        .instructions {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: left;
+        }
+        
+        .instructions h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            color: #4a5568;
+        }
+        
+        .instructions li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        
+        .instructions code {
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🛡️</div>
+        <h1>AI Fake News Detector</h1>
+        <p>Click the button below to launch the application</p>
+        
+        <div id="status" class="status checking">
+            🔍 Checking if server is running...
+        </div>
+        
+        <a href="http://localhost:5000" class="launch-btn" id="launchBtn">
+            🚀 Open Application
+        </a>
+        
+        <div class="url-display">
+            <strong>App URL:</strong> http://localhost:5000
+        </div>
+        
+        <div class="instructions">
+            <h3>📝 First Time Setup:</h3>
+            <ol>
+                <li>Install dependencies: <code>pip install -r requirements.txt</code></li>
+                <li>Start the server: <code>python app.py</code></li>
+                <li>Click the "Open Application" button above</li>
+            </ol>
+            <p style="margin-top: 15px; color: #718096;">
+                💡 <strong>Quick Start:</strong> Run <code>python start.py</code> to auto-start and open!
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Check if server is running
+        async function checkServer() {
+            const statusDiv = document.getElementById('status');
+            const launchBtn = document.getElementById('launchBtn');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/health', {
+                    method: 'GET',
+                    mode: 'no-cors'
+                });
+                
+                // If we get here without error, server is likely running
+                statusDiv.className = 'status ready';
+                statusDiv.innerHTML = '✅ Server is running! Click the button to open.';
+                
+            } catch (error) {
+                // Server is not running
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = '⚠️ Server is not running. Please start it first: <code>python app.py</code>';
+            }
+        }
+        
+        // Check on page load
+        checkServer();
+        
+        // Recheck every 5 seconds
+        setInterval(checkServer, 5000);
+        
+        // Add click tracking
+        document.getElementById('launchBtn').addEventListener('click', function() {
+            console.log('Launching AI Fake News Detector...');
+        });
+    </script>
+</body>
+</html>

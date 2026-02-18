@@ -6,6 +6,18 @@ A simple, student-friendly web application that analyzes news articles to detect
 ![Flask](https://img.shields.io/badge/Flask-3.0-green.svg)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple.svg)
 
+## 🔗 Quick Access
+
+**Want to open the app right away?**
+
+1. Install dependencies: `pip install -r requirements.txt`
+2. Start the server: `python app.py` (or use `python start.py` for automatic browser opening)
+3. **Click here to open:** 👉 [http://localhost:5000](http://localhost:5000) 👈
+
+> 💡 **Pro Tip:** Run `python start.py` for automatic startup and browser opening!
+
+For detailed instructions, see [QUICK_START.md](QUICK_START.md)
+
 ## 📋 Features
 
 - ✅ **Simple Text Analysis** - Paste any news article for instant analysis
