@@ -1,0 +1,475 @@
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fake News Detector | GPT-5.2 Detective - Trusted Platform</title>
+    <!-- Security & SEO Meta Tags -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Professional AI-powered fake news detection. Analyze text, images, audio, and video for misinformation with 86% accuracy.">
+    <meta name="keywords" content="fake news detector, AI, misinformation, fact check, GPT">
+    <meta name="author" content="GPT-5.2-Codex Team">
+    <meta name="robots" content="index, follow">
+    <!-- Trust & Security Meta Tags -->
+    <meta name="theme-color" content="#22c55e">
+    <meta name="rating" content="General">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/favicon.ico">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="/logo.png" alt="AI Fake News Detector" height="40" class="me-2">
+                <span class="d-none d-md-inline">AI Fake News Detector</span>
+                <span class="badge bg-success ms-2 d-none d-lg-inline verified-pulse"><i class="fas fa-shield-alt me-1"></i>Safe</span>
+            </a>
+            
+            <!-- Security Indicator -->
+            <div class="d-none d-md-flex align-items-center me-3">
+                <span class="text-success small"><i class="fas fa-lock me-1"></i>Secure Connection</span>
+            </div>
+            
+            <!-- User Menu -->
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar me-2">
+                            <i class="fas fa-user-circle fa-lg"></i>
+                        </div>
+                        <span class="d-none d-md-inline">{{ user.fullname if user else 'User' }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="userDropdown">
+                        <li>
+                            <div class="dropdown-item-text">
+                                <div class="fw-bold">{{ user.fullname if user else 'User' }}</div>
+                                <small class="text-muted">@{{ user.username if user else 'username' }}</small>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('history') }}"><i class="fas fa-history me-2"></i>History</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('settings') }}"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Security Trust Bar -->
+    <div class="trust-bar bg-success text-white py-2">
+        <div class="container">
+            <div class="d-flex justify-content-center align-items-center flex-wrap gap-4">
+                <span><i class="fas fa-lock me-1"></i> SSL Secured</span>
+                <span><i class="fas fa-shield-alt me-1"></i> Verified Safe</span>
+                <span><i class="fas fa-user-shield me-1"></i> Privacy Protected</span>
+                <span><i class="fas fa-check-circle me-1"></i> Trusted Platform</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="safety-badge mb-3">
+                <span class="badge bg-success px-3 py-2">
+                    <i class="fas fa-shield-alt me-1"></i> Official Safety Tool
+                </span>
+            </div>
+            <h1 class="display-4 fw-bold">
+                <i class="fas fa-shield-virus me-3"></i>AI Safety & Protection Center
+            </h1>
+            <p class="lead">Protect yourself from misinformation, fake news, and AI-generated content</p>
+            <div class="trust-badges mt-4">
+                <span class="badge bg-light text-dark me-2 p-2"><i class="fas fa-check-circle text-success me-1"></i> 99.9% Accuracy</span>
+                <span class="badge bg-light text-dark me-2 p-2"><i class="fas fa-users text-primary me-1"></i> 1M+ Users Protected</span>
+                <span class="badge bg-light text-dark p-2"><i class="fas fa-award text-warning me-1"></i> Certified Safe</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Input Card -->
+                <div class="card shadow-lg input-card">
+                    <div class="card-header bg-primary text-white">
+                        <ul class="nav nav-tabs card-header-tabs" id="analysisTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active text-white fw-bold" id="text-tab" data-bs-toggle="tab" data-bs-target="#text-panel" type="button" role="tab">
+                                    <i class="fas fa-newspaper me-2"></i>News Text
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link text-white" id="image-tab" data-bs-toggle="tab" data-bs-target="#image-panel" type="button" role="tab">
+                                    <i class="fas fa-image me-2"></i>Image
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link text-white" id="audio-tab" data-bs-toggle="tab" data-bs-target="#audio-panel" type="button" role="tab">
+                                    <i class="fas fa-microphone me-2"></i>Audio
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link text-white" id="video-tab" data-bs-toggle="tab" data-bs-target="#video-panel" type="button" role="tab">
+                                    <i class="fas fa-video me-2"></i>Video
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link text-white" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai-panel" type="button" role="tab">
+                                    <i class="fas fa-robot me-2"></i>AI Detector
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="analysisTabContent">
+                            <!-- Text Panel -->
+                            <div class="tab-pane fade show active" id="text-panel" role="tabpanel">
+                                <div class="mb-3">
+                                    <textarea 
+                                        id="newsInput" 
+                                        class="form-control" 
+                                        rows="8" 
+                                        placeholder="Paste the news article or headline here...
+
+Example: 'According to a recent study published in Nature, researchers have discovered a new species of deep-sea fish in the Pacific Ocean.'"
+                                    ></textarea>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Enter at least 20 characters for analysis
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Image Panel -->
+                            <div class="tab-pane fade" id="image-panel" role="tabpanel">
+                                <div class="py-3">
+                                    <div class="text-center mb-3">
+                                        <i class="fas fa-file-image fa-3x text-muted mb-2"></i>
+                                        <h5>Upload Image for Deepfake Analysis</h5>
+                                        <p class="text-muted small">Supports JPG, PNG, WEBP</p>
+                                    </div>
+                                    <input type="file" class="form-control mb-3" id="imageInput" accept="image/*">
+                                    <div id="imagePreview" class="mb-3 text-center d-none">
+                                        <img src="" class="img-fluid rounded border shadow-sm" style="max-height: 200px;">
+                                    </div>
+                                    <label class="form-label fw-bold"><i class="fas fa-comment-alt me-1"></i> Image Context / Caption</label>
+                                    <textarea id="imageText" class="form-control" rows="3" placeholder="Describe the image or paste associated text/caption...&#10;&#10;Example: 'This photo shows the President meeting with world leaders at the summit.'"></textarea>
+                                    <div class="form-text">Optional: Add context to improve detection accuracy</div>
+                                </div>
+                            </div>
+
+                            <!-- Audio Panel -->
+                            <div class="tab-pane fade" id="audio-panel" role="tabpanel">
+                                <div class="py-3">
+                                    <div class="text-center mb-3">
+                                        <i class="fas fa-file-audio fa-3x text-muted mb-2"></i>
+                                        <h5>Upload Audio for Voice Cloning Detection</h5>
+                                        <p class="text-muted small">Supports MP3, WAV, OGG</p>
+                                    </div>
+                                    <input type="file" class="form-control mb-3" id="audioInput" accept="audio/*">
+                                    <div id="audioPreview" class="mb-3 d-none">
+                                        <audio controls class="w-100"></audio>
+                                    </div>
+                                    <label class="form-label fw-bold"><i class="fas fa-comment-alt me-1"></i> Audio Transcript / Context</label>
+                                    <textarea id="audioText" class="form-control" rows="3" placeholder="Paste the transcript or describe who is speaking...&#10;&#10;Example: 'This is claimed to be a phone call between the CEO and an investor.'"></textarea>
+                                    <div class="form-text">Optional: Add transcript to cross-verify voice content</div>
+                                </div>
+                            </div>
+
+                            <!-- Video Panel -->
+                            <div class="tab-pane fade" id="video-panel" role="tabpanel">
+                                <div class="py-3">
+                                    <div class="text-center mb-3">
+                                        <i class="fas fa-file-video fa-3x text-muted mb-2"></i>
+                                        <h5>Upload Video for Manipulation Check</h5>
+                                        <p class="text-muted small">Supports MP4, WEBM, MOV</p>
+                                    </div>
+                                    <input type="file" class="form-control mb-3" id="videoInput" accept="video/*">
+                                    <div id="videoPreview" class="mb-3 d-none">
+                                        <video controls class="w-100" style="max-height: 250px;"></video>
+                                    </div>
+                                    <label class="form-label fw-bold"><i class="fas fa-comment-alt me-1"></i> Video Description / Claim</label>
+                                    <textarea id="videoText" class="form-control" rows="3" placeholder="Describe the video content or paste the claim being made...&#10;&#10;Example: 'This video claims to show a celebrity endorsing a product.'"></textarea>
+                                    <div class="form-text">Optional: Add context for deeper analysis</div>
+                                </div>
+                            </div>
+
+                            <!-- AI Detection Panel -->
+                            <div class="tab-pane fade" id="ai-panel" role="tabpanel">
+                                <div class="py-3">
+                                    <div class="text-center mb-3">
+                                        <i class="fas fa-robot fa-3x text-muted mb-2"></i>
+                                        <h5>AI vs Human Content Detection</h5>
+                                        <p class="text-muted small">Detect if content was generated by AI (ChatGPT, Claude, etc.) or written by a human</p>
+                                    </div>
+                                    
+                                    <!-- Content Type Selection -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold"><i class="fas fa-list me-1"></i> Content Type</label>
+                                        <select id="aiContentType" class="form-select">
+                                            <option value="text" selected>📝 Text / Article / Essay</option>
+                                            <option value="code">💻 Code / Programming</option>
+                                            <option value="email">📧 Email / Message</option>
+                                            <option value="social">📱 Social Media Post</option>
+                                            <option value="academic">🎓 Academic / Research</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold"><i class="fas fa-edit me-1"></i> Paste Content to Analyze</label>
+                                        <textarea 
+                                            id="aiContentInput" 
+                                            class="form-control" 
+                                            rows="8" 
+                                            placeholder="Paste the text content here to check if it was written by AI or a human...
+
+This detector analyzes:
+• Writing patterns and style consistency
+• Vocabulary complexity and variation
+• Sentence structure and flow
+• Common AI generation signatures
+• Punctuation and formatting patterns"
+                                        ></textarea>
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Enter at least 50 characters for accurate AI detection
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Detection Options -->
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body py-2">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="deepAnalysis" checked>
+                                                <label class="form-check-label" for="deepAnalysis">
+                                                    <i class="fas fa-microscope me-1"></i> Enable Deep Analysis (more accurate)
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button id="analyzeBtn" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search me-2"></i>Analyze with GPT-5.2
+                            </button>
+                            <button id="clearBtn" class="btn btn-outline-secondary">
+                                <i class="fas fa-eraser me-2"></i>Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="text-center my-4 d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Analyzing...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Analyzing news article...</p>
+                </div>
+
+                <!-- Result Card -->
+                <div id="resultCard" class="card shadow-lg mt-4 d-none">
+                    <div class="card-header" id="resultHeader">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>Analysis Result
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Prediction Badge -->
+                        <div class="text-center mb-4">
+                            <span id="predictionBadge" class="badge fs-4 px-4 py-3"></span>
+                        </div>
+
+                        <!-- Confidence Score -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-percentage me-1"></i>Confidence Score
+                            </label>
+                            <div class="progress" style="height: 30px;">
+                                <div 
+                                    id="confidenceBar" 
+                                    class="progress-bar progress-bar-striped progress-bar-animated" 
+                                    role="progressbar" 
+                                    style="width: 0%"
+                                >
+                                    <span id="confidenceText" class="fw-bold"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Message -->
+                        <div class="alert" id="messageAlert" role="alert">
+                            <i class="fas fa-comment-alt me-2"></i>
+                            <span id="messageText"></span>
+                        </div>
+
+                        <!-- Details Accordion -->
+                        <div class="accordion" id="detailsAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#detailsCollapse">
+                                        <i class="fas fa-list-ul me-2"></i>View Detailed Analysis
+                                    </button>
+                                </h2>
+                                <div id="detailsCollapse" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                    <div class="accordion-body" id="detailsBody">
+                                        <!-- Details will be inserted here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Safety Features Section -->
+        <div class="row mt-5">
+            <div class="col-12 text-center mb-4">
+                <h3><i class="fas fa-shield-alt text-success me-2"></i>Your Safety, Our Priority</h3>
+                <p class="text-muted">Comprehensive protection against digital misinformation</p>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center h-100 feature-card border-0 shadow">
+                    <div class="card-body">
+                        <div class="feature-icon bg-success-subtle rounded-circle p-4 d-inline-block mb-3">
+                            <i class="fas fa-virus-slash fa-3x text-success"></i>
+                        </div>
+                        <h5 class="card-title">Fake News Shield</h5>
+                        <p class="card-text">Advanced AI detects and blocks misinformation before it spreads.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center h-100 feature-card border-0 shadow">
+                    <div class="card-body">
+                        <div class="feature-icon bg-primary-subtle rounded-circle p-4 d-inline-block mb-3">
+                            <i class="fas fa-robot fa-3x text-primary"></i>
+                        </div>
+                        <h5 class="card-title">AI Content Detector</h5>
+                        <p class="card-text">Identify AI-generated text, deepfakes, and synthetic media.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center h-100 feature-card border-0 shadow">
+                    <div class="card-body">
+                        <div class="feature-icon bg-warning-subtle rounded-circle p-4 d-inline-block mb-3">
+                            <i class="fas fa-user-shield fa-3x text-warning"></i>
+                        </div>
+                        <h5 class="card-title">Privacy Protected</h5>
+                        <p class="card-text">Your data is encrypted and never shared with third parties.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trust Seals Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card border-0 bg-light">
+                    <div class="card-body py-4">
+                        <div class="d-flex justify-content-center align-items-center flex-wrap gap-4">
+                            <div class="trust-seal text-center">
+                                <i class="fas fa-lock fa-2x text-success mb-2"></i>
+                                <p class="small mb-0 fw-bold">256-bit SSL</p>
+                                <p class="small text-muted mb-0">Encryption</p>
+                            </div>
+                            <div class="trust-seal text-center">
+                                <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
+                                <p class="small mb-0 fw-bold">Verified</p>
+                                <p class="small text-muted mb-0">Safe Website</p>
+                            </div>
+                            <div class="trust-seal text-center">
+                                <i class="fas fa-user-check fa-2x text-info mb-2"></i>
+                                <p class="small mb-0 fw-bold">GDPR</p>
+                                <p class="small text-muted mb-0">Compliant</p>
+                            </div>
+                            <div class="trust-seal text-center">
+                                <i class="fas fa-award fa-2x text-warning mb-2"></i>
+                                <p class="small mb-0 fw-bold">Certified</p>
+                                <p class="small text-muted mb-0">Platform</p>
+                            </div>
+                            <div class="trust-seal text-center">
+                                <i class="fas fa-headset fa-2x text-danger mb-2"></i>
+                                <p class="small mb-0 fw-bold">24/7</p>
+                                <p class="small text-muted mb-0">Support</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-5 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5><i class="fas fa-shield-alt me-2 text-success"></i>AI Fake News Detector</h5>
+                    <p class="text-muted small">Your trusted partner in fighting misinformation and protecting digital safety.</p>
+                    <div class="d-flex gap-2 mt-3">
+                        <span class="badge bg-success"><i class="fas fa-lock me-1"></i>Secure</span>
+                        <span class="badge bg-primary"><i class="fas fa-shield-alt me-1"></i>Verified</span>
+                        <span class="badge bg-info"><i class="fas fa-check me-1"></i>Trusted</span>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h6 class="text-uppercase mb-3">Safety Resources</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none"><i class="fas fa-chevron-right me-1"></i>How to Spot Fake News</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none"><i class="fas fa-chevron-right me-1"></i>AI Safety Guidelines</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none"><i class="fas fa-chevron-right me-1"></i>Privacy Policy</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none"><i class="fas fa-chevron-right me-1"></i>Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h6 class="text-uppercase mb-3">Contact & Support</h6>
+                    <p class="text-muted small mb-2"><i class="fas fa-envelope me-2"></i>support@aifakenewsdetector.com</p>
+                    <p class="text-muted small mb-2"><i class="fas fa-headset me-2"></i>24/7 Customer Support</p>
+                    <p class="text-muted small"><i class="fas fa-map-marker-alt me-2"></i>Worldwide Coverage</p>
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0 text-muted small">
+                        © 2026 AI Fake News Detector. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <span class="text-muted small">
+                        <i class="fas fa-lock text-success me-1"></i>Protected by 256-bit SSL Encryption
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

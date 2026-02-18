@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | AI Fake News Detector</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') }}">
+                <img src="/logo.png" alt="AI Fake News Detector" height="40" class="me-2">
+                <span class="d-none d-md-inline">AI Fake News Detector</span>
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar me-2">
+                            <i class="fas fa-user-circle fa-lg"></i>
+                        </div>
+                        <span class="d-none d-md-inline">{{ user.fullname if user else 'User' }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="userDropdown">
+                        <li>
+                            <div class="dropdown-item-text">
+                                <div class="fw-bold">{{ user.fullname if user else 'User' }}</div>
+                                <small class="text-muted">@{{ user.username if user else 'username' }}</small>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('history') }}"><i class="fas fa-history me-2"></i>History</a></li>
+                        <li><a class="dropdown-item active" href="{{ url_for('settings') }}"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header bg-dark text-white py-4">
+        <div class="container">
+            <h2 class="mb-1"><i class="fas fa-cog me-2"></i>Settings</h2>
+            <p class="mb-0 opacity-75">Manage your account preferences and security</p>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <div class="container my-4">
+        <div class="row">
+            <!-- Settings Navigation -->
+            <div class="col-lg-3 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a href="#preferences" class="list-group-item list-group-item-action active" data-bs-toggle="list">
+                                <i class="fas fa-sliders-h me-2"></i>Account Preferences
+                            </a>
+                            <a href="#location" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                                <i class="fas fa-map-marker-alt me-2"></i>Location
+                            </a>
+                            <a href="#language" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                                <i class="fas fa-language me-2"></i>Language
+                            </a>
+                            <a href="#content-language" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                                <i class="fas fa-globe me-2"></i>Content Language
+                            </a>
+                            <a href="#account-management" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                                <i class="fas fa-user-cog me-2"></i>Account Management
+                            </a>
+                            <a href="#passkey" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                                <i class="fas fa-key me-2"></i>Passkey & Security
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Content -->
+            <div class="col-lg-9">
+                <form id="settingsForm" action="{{ url_for('update_settings') }}" method="POST">
+                    <div class="tab-content">
+                        
+                        <!-- Account Preferences -->
+                        <div class="tab-pane fade show active" id="preferences">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0"><i class="fas fa-sliders-h me-2 text-primary"></i>Account Preferences</h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Theme -->
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">Theme</label>
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <input type="radio" class="btn-check" name="theme" id="themeLight" value="light" 
+                                                    {{ 'checked' if settings.theme == 'light' or not settings.theme else '' }}>
+                                                <label class="btn btn-outline-secondary w-100" for="themeLight">
+                                                    <i class="fas fa-sun me-2"></i>Light
+                                                </label>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <input type="radio" class="btn-check" name="theme" id="themeDark" value="dark"
+                                                    {{ 'checked' if settings.theme == 'dark' else '' }}>
+                                                <label class="btn btn-outline-secondary w-100" for="themeDark">
+                                                    <i class="fas fa-moon me-2"></i>Dark
+                                                </label>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <input type="radio" class="btn-check" name="theme" id="themeAuto" value="auto"
+                                                    {{ 'checked' if settings.theme == 'auto' else '' }}>
+                                                <label class="btn btn-outline-secondary w-100" for="themeAuto">
+                                                    <i class="fas fa-adjust me-2"></i>Auto
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Notifications -->
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">Notifications</label>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" name="email_notifications" id="emailNotif"
+                                                {{ 'checked' if settings.email_notifications else '' }}>
+                                            <label class="form-check-label" for="emailNotif">Email Notifications</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" name="analysis_alerts" id="analysisAlerts"
+                                                {{ 'checked' if settings.analysis_alerts else '' }}>
+                                            <label class="form-check-label" for="analysisAlerts">Analysis Completion Alerts</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="security_alerts" id="securityAlerts"
+                                                {{ 'checked' if settings.security_alerts != false else '' }} checked>
+                                            <label class="form-check-label" for="securityAlerts">Security Alerts</label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Default Analysis Type -->
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">Default Analysis Type</label>
+                                        <select class="form-select" name="default_analysis_type">
+                                            <option value="text" {{ 'selected' if settings.default_analysis_type == 'text' or not settings.default_analysis_type else '' }}>Text Analysis</option>
+                                            <option value="image" {{ 'selected' if settings.default_analysis_type == 'image' else '' }}>Image Analysis</option>
+                                            <option value="audio" {{ 'selected' if settings.default_analysis_type == 'audio' else '' }}>Audio Analysis</option>
+                                            <option value="video" {{ 'selected' if settings.default_analysis_type == 'video' else '' }}>Video Analysis</option>
+                                            <option value="ai" {{ 'selected' if settings.default_analysis_type == 'ai' else '' }}>AI Detection</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Auto Save History -->
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">History Settings</label>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" name="auto_save_history" id="autoSaveHistory"
+                                                {{ 'checked' if settings.auto_save_history != false else '' }} checked>
+                                            <label class="form-check-label" for="autoSaveHistory">Auto-save analysis to history</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="show_detailed_results" id="detailedResults"
+                                                {{ 'checked' if settings.show_detailed_results != false else '' }} checked>
+                                            <label class="form-check-label" for="detailedResults">Show detailed analysis results</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="tab-pane fade" id="location">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2 text-primary"></i>Location Settings</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">Country/Region</label>
+                                        <select class="form-select" name="country">
+                                            <option value="">Select your country</option>
+                                            <option value="IN" {{ 'selected' if settings.country == 'IN' else '' }}>India</option>
+                                            <option value="US" {{ 'selected' if settings.country == 'US' else '' }}>United States</option>
+                                            <option value="UK" {{ 'selected' if settings.country == 'UK' else '' }}>United Kingdom</option>
+                                            <option value="CA" {{ 'selected' if settings.country == 'CA' else '' }}>Canada</option>
+                                            <option value="AU" {{ 'selected' if settings.country == 'AU' else '' }}>Australia</option>
+                                            <option value="DE" {{ 'selected' if settings.country == 'DE' else '' }}>Germany</option>
+                                            <option value="FR" {{ 'selected' if settings.country == 'FR' else '' }}>France</option>
+                                            <option value="JP" {{ 'selected' if settings.country == 'JP' else '' }}>Japan</option>
+                                            <option value="CN" {{ 'selected' if settings.country == 'CN' else '' }}>China</option>
+                                            <option value="BR" {{ 'selected' if settings.country == 'BR' else '' }}>Brazil</option>
+                                            <option value="other" {{ 'selected' if settings.country == 'other' else '' }}>Other</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">City <span class="text-muted">(Optional)</span></label>
+                                        <input type="text" class="form-control" name="city" value="{{ settings.city or '' }}" placeholder="Enter your city">
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">Timezone</label>
+                                        <select class="form-select" name="timezone">
+                                            <option value="auto" {{ 'selected' if settings.timezone == 'auto' or not settings.timezone else '' }}>Auto-detect</option>
+                                            <option value="UTC" {{ 'selected' if settings.timezone == 'UTC' else '' }}>UTC</option>
+                                            <option value="IST" {{ 'selected' if settings.timezone == 'IST' else '' }}>IST (India Standard Time)</option>
+                                            <option value="EST" {{ 'selected' if settings.timezone == 'EST' else '' }}>EST (Eastern Standard Time)</option>
+                                            <option value="PST" {{ 'selected' if settings.timezone == 'PST' else '' }}>PST (Pacific Standard Time)</option>
+                                            <option value="GMT" {{ 'selected' if settings.timezone == 'GMT' else '' }}>GMT (Greenwich Mean Time)</option>
+                                            <option value="CET" {{ 'selected' if settings.timezone == 'CET' else '' }}>CET (Central European Time)</option>
+                                            <option value="JST" {{ 'selected' if settings.timezone == 'JST' else '' }}>JST (Japan Standard Time)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Location is used to personalize news sources and regional fact-checking databases.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Language -->
+                        <div class="tab-pane fade" id="language">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0"><i class="fas fa-language me-2 text-primary"></i>Interface Language</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">Display Language</label>
+                                        <select class="form-select" name="interface_language">
+                                            <option value="en" {{ 'selected' if settings.interface_language == 'en' or not settings.interface_language else '' }}>English</option>
+                                            <option value="hi" {{ 'selected' if settings.interface_language == 'hi' else '' }}>हिंदी (Hindi)</option>
+                                            <option value="ta" {{ 'selected' if settings.interface_language == 'ta' else '' }}>தமிழ் (Tamil)</option>
+                                            <option value="te" {{ 'selected' if settings.interface_language == 'te' else '' }}>తెలుగు (Telugu)</option>
+                                            <option value="es" {{ 'selected' if settings.interface_language == 'es' else '' }}>Español (Spanish)</option>
+                                            <option value="fr" {{ 'selected' if settings.interface_language == 'fr' else '' }}>Français (French)</option>
+                                            <option value="de" {{ 'selected' if settings.interface_language == 'de' else '' }}>Deutsch (German)</option>
+                                            <option value="ja" {{ 'selected' if settings.interface_language == 'ja' else '' }}>日本語 (Japanese)</option>
+                                            <option value="zh" {{ 'selected' if settings.interface_language == 'zh' else '' }}>中文 (Chinese)</option>
+                                            <option value="ar" {{ 'selected' if settings.interface_language == 'ar' else '' }}>العربية (Arabic)</option>
+                                        </select>
+                                        <small class="text-muted">This changes the language of buttons, menus, and interface text.</small>
+                                    </div>
+
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Note: Currently only English is fully supported. Other languages are coming soon.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content Language -->
+                        <div class="tab-pane fade" id="content-language">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0"><i class="fas fa-globe me-2 text-primary"></i>Content Language Preferences</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">Primary Content Language</label>
+                                        <select class="form-select" name="content_language">
+                                            <option value="en" {{ 'selected' if settings.content_language == 'en' or not settings.content_language else '' }}>English</option>
+                                            <option value="hi" {{ 'selected' if settings.content_language == 'hi' else '' }}>Hindi</option>
+                                            <option value="ta" {{ 'selected' if settings.content_language == 'ta' else '' }}>Tamil</option>
+                                            <option value="te" {{ 'selected' if settings.content_language == 'te' else '' }}>Telugu</option>
+                                            <option value="es" {{ 'selected' if settings.content_language == 'es' else '' }}>Spanish</option>
+                                            <option value="fr" {{ 'selected' if settings.content_language == 'fr' else '' }}>French</option>
+                                            <option value="de" {{ 'selected' if settings.content_language == 'de' else '' }}>German</option>
+                                            <option value="multi" {{ 'selected' if settings.content_language == 'multi' else '' }}>Multi-language (Auto-detect)</option>
+                                        </select>
+                                        <small class="text-muted">Language of news articles you typically analyze.</small>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">Additional Languages</label>
+                                        <div class="row g-2">
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="additional_languages" value="en" id="langEn"
+                                                        {{ 'checked' if 'en' in (settings.additional_languages or []) else '' }}>
+                                                    <label class="form-check-label" for="langEn">English</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="additional_languages" value="hi" id="langHi"
+                                                        {{ 'checked' if 'hi' in (settings.additional_languages or []) else '' }}>
+                                                    <label class="form-check-label" for="langHi">Hindi</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="additional_languages" value="ta" id="langTa"
+                                                        {{ 'checked' if 'ta' in (settings.additional_languages or []) else '' }}>
+                                                    <label class="form-check-label" for="langTa">Tamil</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="additional_languages" value="es" id="langEs"
+                                                        {{ 'checked' if 'es' in (settings.additional_languages or []) else '' }}>
+                                                    <label class="form-check-label" for="langEs">Spanish</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="additional_languages" value="fr" id="langFr"
+                                                        {{ 'checked' if 'fr' in (settings.additional_languages or []) else '' }}>
+                                                    <label class="form-check-label" for="langFr">French</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="additional_languages" value="de" id="langDe"
+                                                        {{ 'checked' if 'de' in (settings.additional_languages or []) else '' }}>
+                                                    <label class="form-check-label" for="langDe">German</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Content language helps optimize the AI analysis for specific linguistic patterns.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Account Management -->
+                        <div class="tab-pane fade" id="account-management">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0"><i class="fas fa-user-cog me-2 text-primary"></i>Account Management</h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Data Export -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold">Data Export</h6>
+                                        <p class="text-muted small">Download a copy of your data including profile and history.</p>
+                                        <button type="button" class="btn btn-outline-primary" onclick="exportData()">
+                                            <i class="fas fa-download me-2"></i>Export My Data
+                                        </button>
+                                    </div>
+
+                                    <hr>
+
+                                    <!-- Clear History -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold">Clear Analysis History</h6>
+                                        <p class="text-muted small">Permanently delete all your analysis history.</p>
+                                        <button type="button" class="btn btn-outline-warning" onclick="clearHistory()">
+                                            <i class="fas fa-eraser me-2"></i>Clear History
+                                        </button>
+                                    </div>
+
+                                    <hr>
+
+                                    <!-- Deactivate Account -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold text-warning">Deactivate Account</h6>
+                                        <p class="text-muted small">Temporarily disable your account. You can reactivate anytime.</p>
+                                        <button type="button" class="btn btn-outline-warning" onclick="deactivateAccount()">
+                                            <i class="fas fa-pause-circle me-2"></i>Deactivate Account
+                                        </button>
+                                    </div>
+
+                                    <hr>
+
+                                    <!-- Delete Account -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold text-danger">Delete Account</h6>
+                                        <p class="text-muted small">Permanently delete your account and all data. This cannot be undone.</p>
+                                        <button type="button" class="btn btn-outline-danger" onclick="deleteAccount()">
+                                            <i class="fas fa-trash-alt me-2"></i>Delete Account
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Passkey & Security -->
+                        <div class="tab-pane fade" id="passkey">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0"><i class="fas fa-key me-2 text-primary"></i>Passkey & Security</h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Change Password -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold">Change Password</h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-12">
+                                                <label class="form-label">Current Password</label>
+                                                <input type="password" class="form-control" name="current_password" placeholder="Enter current password">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">New Password</label>
+                                                <input type="password" class="form-control" name="new_password" placeholder="Enter new password">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Confirm New Password</label>
+                                                <input type="password" class="form-control" name="confirm_new_password" placeholder="Confirm new password">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+
+                                    <!-- Passkey -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold">Passkey Authentication</h6>
+                                        <p class="text-muted small">Use biometrics or security keys for passwordless login.</p>
+                                        
+                                        <div class="passkey-list mb-3">
+                                            {% if settings.passkeys and settings.passkeys|length > 0 %}
+                                                {% for passkey in settings.passkeys %}
+                                                <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-2">
+                                                    <div>
+                                                        <i class="fas fa-fingerprint me-2 text-primary"></i>
+                                                        <span>{{ passkey.name }}</span>
+                                                        <small class="text-muted ms-2">Added {{ passkey.created_at }}</small>
+                                                    </div>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removePasskey('{{ passkey.id }}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <div class="text-muted text-center py-3">
+                                                    <i class="fas fa-key fa-2x mb-2"></i>
+                                                    <p class="mb-0">No passkeys registered</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <button type="button" class="btn btn-primary" onclick="addPasskey()">
+                                            <i class="fas fa-plus me-2"></i>Add Passkey
+                                        </button>
+                                    </div>
+
+                                    <hr>
+
+                                    <!-- Two-Factor Authentication -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold">Two-Factor Authentication (2FA)</h6>
+                                        <p class="text-muted small">Add an extra layer of security to your account.</p>
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" name="two_factor_enabled" id="twoFactorEnabled"
+                                                {{ 'checked' if settings.two_factor_enabled else '' }}>
+                                            <label class="form-check-label" for="twoFactorEnabled">Enable Two-Factor Authentication</label>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+
+                                    <!-- Login Sessions -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold">Active Sessions</h6>
+                                        <p class="text-muted small">Manage devices where you're currently logged in.</p>
+                                        
+                                        <div class="session-item d-flex align-items-center justify-content-between p-3 bg-light rounded mb-2">
+                                            <div>
+                                                <i class="fas fa-desktop me-2 text-success"></i>
+                                                <span>Current Session</span>
+                                                <span class="badge bg-success ms-2">Active</span>
+                                            </div>
+                                            <small class="text-muted">This device</small>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-danger btn-sm mt-2" onclick="logoutAllDevices()">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout All Other Devices
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="card shadow-sm">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="fas fa-info-circle me-1"></i>Changes will be saved to your account</span>
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary me-2" onclick="resetSettings()">Reset to Default</button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Settings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-1"><i class="fas fa-code me-1"></i>AI Fake News Detector</p>
+            <p class="mb-0 text-muted"><small>Built with Flask, Bootstrap & JavaScript</small></p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle hash navigation for deep linking
+        document.addEventListener('DOMContentLoaded', function() {
+            const hash = window.location.hash;
+            if (hash) {
+                const tab = document.querySelector(`a[href="${hash}"]`);
+                if (tab) {
+                    new bootstrap.Tab(tab).show();
+                }
+            }
+        });
+
+        function exportData() {
+            if (confirm('Download a copy of all your data?')) {
+                window.location.href = '/api/export-data';
+            }
+        }
+
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear all analysis history? This cannot be undone.')) {
+                fetch('/api/history/clear', {method: 'POST'})
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('History cleared successfully!');
+                        }
+                    });
+            }
+        }
+
+        function deactivateAccount() {
+            if (confirm('Are you sure you want to deactivate your account?')) {
+                fetch('/api/account/deactivate', {method: 'POST'})
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/logout';
+                        }
+                    });
+            }
+        }
+
+        function deleteAccount() {
+            const confirmation = prompt('Type "DELETE" to permanently delete your account:');
+            if (confirmation === 'DELETE') {
+                fetch('/api/account/delete', {method: 'POST'})
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/login';
+                        }
+                    });
+            }
+        }
+
+        function addPasskey() {
+            alert('Passkey registration will be available soon. This feature requires WebAuthn support.');
+        }
+
+        function removePasskey(id) {
+            if (confirm('Remove this passkey?')) {
+                fetch('/api/passkey/remove', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id: id})
+                }).then(() => location.reload());
+            }
+        }
+
+        function logoutAllDevices() {
+            if (confirm('Logout from all other devices?')) {
+                fetch('/api/logout-all', {method: 'POST'})
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Logged out from all other devices.');
+                        }
+                    });
+            }
+        }
+
+        function resetSettings() {
+            if (confirm('Reset all settings to default values?')) {
+                fetch('/api/settings/reset', {method: 'POST'})
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        }
+                    });
+            }
+        }
+    </script>
+</body>
+</html>
