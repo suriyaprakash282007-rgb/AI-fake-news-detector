@@ -77,8 +77,11 @@ def analyze_text(text):
     
     # Check for excessive caps
     words = text.split()
-    caps_count = sum(1 for word in words if len(word) > 3 and word.isupper())
-    excessive_caps = caps_count > len(words) * 0.2  # More than 20% caps
+    if len(words) > 0:
+        caps_count = sum(1 for word in words if len(word) > 3 and word.isupper())
+        excessive_caps = caps_count > len(words) * 0.2  # More than 20% caps
+    else:
+        excessive_caps = False
     
     # Calculate confidence score
     fake_score = len(fake_found) * 15
