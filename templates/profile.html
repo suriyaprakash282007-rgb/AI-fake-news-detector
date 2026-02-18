@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | AI Fake News Detector</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') }}">
+                <img src="/logo.png" alt="AI Fake News Detector" height="40" class="me-2">
+                <span class="d-none d-md-inline">AI Fake News Detector</span>
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar me-2">
+                            <i class="fas fa-user-circle fa-lg"></i>
+                        </div>
+                        <span class="d-none d-md-inline">{{ user.fullname if user else 'User' }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="userDropdown">
+                        <li>
+                            <div class="dropdown-item-text">
+                                <div class="fw-bold">{{ user.fullname if user else 'User' }}</div>
+                                <small class="text-muted">@{{ user.username if user else 'username' }}</small>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item active" href="{{ url_for('profile') }}"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('history') }}"><i class="fas fa-history me-2"></i>History</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('settings') }}"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header bg-gradient-primary text-white py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="profile-avatar-large">
+                        <i class="fas fa-user fa-3x"></i>
+                    </div>
+                </div>
+                <div class="col">
+                    <h2 class="mb-1">{{ profile.fullname or user.fullname }}</h2>
+                    <p class="mb-0 opacity-75">@{{ user.username }}</p>
+                    <small class="opacity-50"><i class="fas fa-calendar me-1"></i>Member since {{ profile.created_at or 'N/A' }}</small>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-light" onclick="toggleEdit()">
+                        <i class="fas fa-edit me-1"></i> Edit Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <div class="container my-4">
+        <div class="row">
+            <!-- Profile Info Card -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-user-circle me-2 text-primary"></i>Personal Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="profileForm" action="{{ url_for('update_profile') }}" method="POST">
+                            <div class="row g-3">
+                                <!-- Full Name -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Full Name</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" class="form-control profile-input" name="fullname" 
+                                            value="{{ profile.fullname or user.fullname }}" readonly>
+                                    </div>
+                                </div>
+
+                                <!-- Username -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Username</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">@</span>
+                                        <input type="text" class="form-control" value="{{ user.username }}" readonly disabled>
+                                    </div>
+                                    <small class="text-muted">Username cannot be changed</small>
+                                </div>
+
+                                <!-- Primary Email -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Primary Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                        <input type="email" class="form-control profile-input" name="email" 
+                                            value="{{ profile.email or user.email }}" readonly>
+                                    </div>
+                                </div>
+
+                                <!-- Additional Email -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Additional Email <span class="text-muted">(Optional)</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-envelope-open"></i></span>
+                                        <input type="email" class="form-control profile-input" name="additional_email" 
+                                            value="{{ profile.additional_email or '' }}" placeholder="backup@example.com" readonly>
+                                    </div>
+                                </div>
+
+                                <!-- Date of Birth -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Date of Birth</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-birthday-cake"></i></span>
+                                        <input type="date" class="form-control profile-input" name="date_of_birth" 
+                                            value="{{ profile.date_of_birth or '' }}" readonly>
+                                    </div>
+                                </div>
+
+                                <!-- Phone Number -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Phone Number <span class="text-muted">(Optional)</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                        <input type="tel" class="form-control profile-input" name="phone" 
+                                            value="{{ profile.phone or '' }}" placeholder="+1 234 567 8900" readonly>
+                                    </div>
+                                </div>
+
+                                <!-- Bio -->
+                                <div class="col-12">
+                                    <label class="form-label">Bio <span class="text-muted">(Optional)</span></label>
+                                    <textarea class="form-control profile-input" name="bio" rows="3" 
+                                        placeholder="Tell us about yourself..." readonly>{{ profile.bio or '' }}</textarea>
+                                </div>
+                            </div>
+
+                            <!-- Save Button (hidden by default) -->
+                            <div class="mt-4 d-none" id="saveButtons">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i> Save Changes
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary ms-2" onclick="cancelEdit()">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Panel -->
+            <div class="col-lg-4">
+                <!-- Account Stats -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0"><i class="fas fa-chart-bar me-2 text-primary"></i>Account Statistics</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">Total Analyses</span>
+                            <span class="badge bg-primary fs-6">{{ stats.total_analyses or 0 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">Fake Detected</span>
+                            <span class="badge bg-danger fs-6">{{ stats.fake_count or 0 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">Real Verified</span>
+                            <span class="badge bg-success fs-6">{{ stats.real_count or 0 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Uncertain</span>
+                            <span class="badge bg-warning fs-6">{{ stats.uncertain_count or 0 }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0"><i class="fas fa-link me-2 text-primary"></i>Quick Links</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <a href="{{ url_for('history') }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="fas fa-history me-3 text-muted"></i>
+                            <span>View History</span>
+                            <i class="fas fa-chevron-right ms-auto text-muted"></i>
+                        </a>
+                        <a href="{{ url_for('settings') }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="fas fa-cog me-3 text-muted"></i>
+                            <span>Account Settings</span>
+                            <i class="fas fa-chevron-right ms-auto text-muted"></i>
+                        </a>
+                        <a href="{{ url_for('home') }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="fas fa-search me-3 text-muted"></i>
+                            <span>New Analysis</span>
+                            <i class="fas fa-chevron-right ms-auto text-muted"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Account Security -->
+                <div class="card shadow-sm border-warning">
+                    <div class="card-header bg-warning bg-opacity-10">
+                        <h6 class="mb-0"><i class="fas fa-shield-alt me-2 text-warning"></i>Account Security</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span class="small">Email verified</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-{{ 'check-circle text-success' if profile.phone else 'times-circle text-muted' }} me-2"></i>
+                            <span class="small">Phone {{ 'verified' if profile.phone else 'not added' }}</span>
+                        </div>
+                        <a href="{{ url_for('settings') }}#security" class="btn btn-outline-warning btn-sm w-100">
+                            <i class="fas fa-key me-1"></i> Security Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-1"><i class="fas fa-code me-1"></i>AI Fake News Detector</p>
+            <p class="mb-0 text-muted"><small>Built with Flask, Bootstrap & JavaScript</small></p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let isEditing = false;
+
+        function toggleEdit() {
+            isEditing = !isEditing;
+            const inputs = document.querySelectorAll('.profile-input');
+            const saveButtons = document.getElementById('saveButtons');
+            
+            inputs.forEach(input => {
+                input.readOnly = !isEditing;
+                if (isEditing) {
+                    input.classList.add('bg-white', 'border-primary');
+                } else {
+                    input.classList.remove('bg-white', 'border-primary');
+                }
+            });
+            
+            saveButtons.classList.toggle('d-none', !isEditing);
+        }
+
+        function cancelEdit() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>

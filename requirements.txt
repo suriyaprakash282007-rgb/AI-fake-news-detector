@@ -1,0 +1,9 @@
+# AI Fake News Detector - Python Dependencies
+Flask==3.0.0
+flask-cors==4.0.0
+scikit-learn
+pandas
+joblib
+numpy
+gunicorn==21.2.0
+Werkzeug==3.0.1
