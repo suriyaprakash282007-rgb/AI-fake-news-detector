@@ -217,7 +217,7 @@ function escapeHtml(text) {
 // Add enter key handler for textarea (Ctrl+Enter to submit)
 newsText.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.key === 'Enter') {
-        analyzeForm.dispatchEvent(new Event('submit'));
+        analyzeForm.requestSubmit();
     }
 });
 

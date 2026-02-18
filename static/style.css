@@ -225,6 +225,9 @@ footer {
 }
 
 /* Smooth transitions */
-* {
+.btn,
+.card,
+.alert,
+.progress-bar {
     transition: background-color 0.2s ease;
 }
